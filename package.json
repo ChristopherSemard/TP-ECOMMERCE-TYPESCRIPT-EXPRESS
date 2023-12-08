@@ -8,7 +8,7 @@
     "dev": "nodemon -L -e ts --exec \"npm run build && npm start || exit 1\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "build:prod": "npm i && tsc"
+    "build:prod": "npm i && prisma generate && tsc"
   },
   "author": "",
   "license": "ISC",
