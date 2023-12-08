@@ -47,31 +47,6 @@ router.get("/:id", orders_1.idValidator, (req, res) => __awaiter(void 0, void 0,
     }
     return res.status(422).json({ errors: errors.array() });
 }));
-// async function getOrderItemsWithPrice(orderItems: OrderItem[], res: Response) {
-//     let orderItemsWithPrice: OrderItem[] = [];
-//     orderItems.map(async (item: OrderItem) => {
-//         const product = await prisma.product.findUnique({
-//             where: {
-//                 id: item.productId,
-//             },
-//         });
-//         if (!product) {
-//             return res.status(404).send("Product in orderItems not found");
-//         } else {
-//             item.price = product.price;
-//             orderItemsWithPrice.push(item);
-//         }
-//     });
-//     return orderItemsWithPrice;
-// }
-// async function getTotalOrderPrice(orderItems: OrderItem[], res: Response) {
-//     let totalPrice = 0;
-//     orderItems.map((item: OrderItem) => {
-//         totalPrice = totalPrice + item.price;
-//         console.log(totalPrice);
-//     });
-//     return totalPrice;
-// }
 router.post("/", orders_1.createValidator, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const errors = (0, express_validator_1.validationResult)(req);
     if (errors.isEmpty()) {

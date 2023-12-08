@@ -42,33 +42,6 @@ router.get("/:id", idValidator, async (req: Request, res: Response) => {
     return res.status(422).json({ errors: errors.array() });
 });
 
-// async function getOrderItemsWithPrice(orderItems: OrderItem[], res: Response) {
-//     let orderItemsWithPrice: OrderItem[] = [];
-//     orderItems.map(async (item: OrderItem) => {
-//         const product = await prisma.product.findUnique({
-//             where: {
-//                 id: item.productId,
-//             },
-//         });
-//         if (!product) {
-//             return res.status(404).send("Product in orderItems not found");
-//         } else {
-//             item.price = product.price;
-//             orderItemsWithPrice.push(item);
-//         }
-//     });
-//     return orderItemsWithPrice;
-// }
-
-// async function getTotalOrderPrice(orderItems: OrderItem[], res: Response) {
-//     let totalPrice = 0;
-//     orderItems.map((item: OrderItem) => {
-//         totalPrice = totalPrice + item.price;
-//         console.log(totalPrice);
-//     });
-//     return totalPrice;
-// }
-
 router.post("/", createValidator, async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (errors.isEmpty()) {
