@@ -47,27 +47,79 @@ router.get("/:id", orders_1.idValidator, (req, res) => __awaiter(void 0, void 0,
     }
     return res.status(422).json({ errors: errors.array() });
 }));
+// async function getOrderItemsWithPrice(orderItems: OrderItem[], res: Response) {
+//     let orderItemsWithPrice: OrderItem[] = [];
+//     orderItems.map(async (item: OrderItem) => {
+//         const product = await prisma.product.findUnique({
+//             where: {
+//                 id: item.productId,
+//             },
+//         });
+//         if (!product) {
+//             return res.status(404).send("Product in orderItems not found");
+//         } else {
+//             item.price = product.price;
+//             orderItemsWithPrice.push(item);
+//         }
+//     });
+//     return orderItemsWithPrice;
+// }
+// async function getTotalOrderPrice(orderItems: OrderItem[], res: Response) {
+//     let totalPrice = 0;
+//     orderItems.map((item: OrderItem) => {
+//         totalPrice = totalPrice + item.price;
+//         console.log(totalPrice);
+//     });
+//     return totalPrice;
+// }
 router.post("/", orders_1.createValidator, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const errors = (0, express_validator_1.validationResult)(req);
     if (errors.isEmpty()) {
         const { orderItems } = req.body;
         try {
             const jwtUser = req.user;
+            let orderItemsWithPrice = [];
+            let totalPrice = 0;
+            yield Promise.all(orderItems.map((item) => __awaiter(void 0, void 0, void 0, function* () {
+                const product = yield db_1.default.product.findUnique({
+                    where: {
+                        id: item.productId,
+                    },
+                });
+                if (!product) {
+                    return res
+                        .status(404)
+                        .send("Product in orderItems not found");
+                }
+                else {
+                    item.price = product.price;
+                    orderItemsWithPrice.push(item);
+                    totalPrice = totalPrice + product.price * item.quantity;
+                }
+            })));
+            console.log(orderItemsWithPrice);
+            console.log(totalPrice);
             const order = yield db_1.default.order.create({
                 data: {
                     userId: jwtUser.id,
                     orderItems: {
-                        create: orderItems,
+                        create: orderItemsWithPrice,
                     },
-                    total: 50,
+                    total: totalPrice,
                 },
                 include: {
-                    orderItems: true,
+                    orderItems: {
+                        include: {
+                            product: true,
+                        },
+                    },
+                    user: true,
                 },
             });
             return res.status(201).json(order);
         }
         catch (e) {
+            console.log(e);
             return res.status(500).json(e);
         }
     }
@@ -105,6 +157,14 @@ router.patch("/:id", orders_1.updateValidator, (req, res) => __awaiter(void 0, v
                             create: orderItems,
                         },
                     },
+                    include: {
+                        orderItems: {
+                            include: {
+                                product: true,
+                            },
+                        },
+                        user: true,
+                    },
                 });
                 return res.status(201).json(updateOrder);
             }
@@ -120,7 +180,7 @@ router.delete("/:id", orders_1.idValidator, (req, res) => __awaiter(void 0, void
     const errors = (0, express_validator_1.validationResult)(req);
     if (errors.isEmpty()) {
         const { id } = req.params;
-        const existingOrder = yield db_1.default.user.findUnique({
+        const existingOrder = yield db_1.default.order.findUnique({
             where: {
                 id: parseFloat(id),
             },
@@ -132,6 +192,14 @@ router.delete("/:id", orders_1.idValidator, (req, res) => __awaiter(void 0, void
             const deleteOrder = yield db_1.default.order.delete({
                 where: {
                     id: parseFloat(id),
+                },
+                include: {
+                    orderItems: {
+                        include: {
+                            product: true,
+                        },
+                    },
+                    user: true,
                 },
             });
             return res.status(200).send(deleteOrder);

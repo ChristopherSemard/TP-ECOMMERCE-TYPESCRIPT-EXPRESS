@@ -26,11 +26,12 @@ model Product {
   description String
   price       Float
   orderItems  OrderItem[]
+  deleted     Boolean     @default(false)
 }
 
 model Order {
   id         Int         @id @default(autoincrement())
-  user       User        @relation(fields: [userId], references: [id])
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     Int
   orderItems OrderItem[]
   total      Float
@@ -43,6 +44,7 @@ model OrderItem {
   quantity  Int
   orderId   Int
   productId Int
+  price     Float   @default(0)
 }
 
 // enum Role {

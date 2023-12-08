@@ -18,7 +18,11 @@ const products_1 = require("../validators/products");
 const express_validator_1 = require("express-validator");
 const router = express_1.default.Router();
 router.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const products = yield db_1.default.product.findMany();
+    const products = yield db_1.default.product.findMany({
+        where: {
+            deleted: false,
+        },
+    });
     return res.status(200).send(products);
 }));
 router.get("/:id", products_1.idValidator, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -94,7 +98,7 @@ router.delete("/:id", products_1.idValidator, (req, res) => __awaiter(void 0, vo
     const errors = (0, express_validator_1.validationResult)(req);
     if (errors.isEmpty()) {
         const { id } = req.params;
-        const existingProduct = yield db_1.default.user.findUnique({
+        const existingProduct = yield db_1.default.product.findUnique({
             where: {
                 id: parseFloat(id),
             },
@@ -103,12 +107,20 @@ router.delete("/:id", products_1.idValidator, (req, res) => __awaiter(void 0, vo
             return res.status(404).send("Not found");
         }
         else {
-            const deleteProduct = yield db_1.default.product.delete({
-                where: {
-                    id: parseFloat(id),
-                },
-            });
-            return res.status(200).send(deleteProduct);
+            try {
+                const deleteProduct = yield db_1.default.product.update({
+                    where: {
+                        id: parseFloat(id),
+                    },
+                    data: { deleted: true },
+                });
+                console.log(deleteProduct);
+                return res.status(201).send(deleteProduct);
+            }
+            catch (e) {
+                console.log(e);
+                return res.status(500).json(e);
+            }
         }
     }
     return res.status(422).json({ errors: errors.array() });

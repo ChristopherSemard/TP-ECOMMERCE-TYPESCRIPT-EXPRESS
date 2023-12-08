@@ -12,7 +12,11 @@ import { validationResult } from "express-validator";
 const router = express.Router();
 
 router.get("/", async (req: Request, res: Response) => {
-    const products = await prisma.product.findMany();
+    const products = await prisma.product.findMany({
+        where: {
+            deleted: false,
+        },
+    });
     return res.status(200).send(products);
 });
 
@@ -91,20 +95,29 @@ router.delete("/:id", idValidator, async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (errors.isEmpty()) {
         const { id } = req.params;
-        const existingProduct = await prisma.user.findUnique({
+        const existingProduct = await prisma.product.findUnique({
             where: {
                 id: parseFloat(id),
             },
         });
+
         if (!existingProduct) {
             return res.status(404).send("Not found");
         } else {
-            const deleteProduct = await prisma.product.delete({
-                where: {
-                    id: parseFloat(id),
-                },
-            });
-            return res.status(200).send(deleteProduct);
+            try {
+                const deleteProduct = await prisma.product.update({
+                    where: {
+                        id: parseFloat(id),
+                    },
+                    data: { deleted: true },
+                });
+                console.log(deleteProduct);
+
+                return res.status(201).send(deleteProduct);
+            } catch (e) {
+                console.log(e);
+                return res.status(500).json(e);
+            }
         }
     }
     return res.status(422).json({ errors: errors.array() });
