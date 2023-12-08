@@ -57,32 +57,45 @@ router.post("/", users_1.createValidator, (req, res) => __awaiter(void 0, void 0
     if (errors.isEmpty()) {
         const { firstname, lastname, email, password } = req.body;
         try {
-            const hashPassword = yield bcrypt_1.default.hash(password, 10, function (err, hash) {
-                return __awaiter(this, void 0, void 0, function* () {
-                    try {
-                        const newUser = yield db_1.default.user.create({
-                            data: {
-                                firstname,
-                                lastname,
-                                email,
-                                password: hash,
-                            },
-                        });
-                        console.log(newUser);
-                        const { password } = newUser, userInfos = __rest(newUser, ["password"]);
-                        return res.status(201).json(userInfos);
-                    }
-                    catch (e) {
-                        console.log("ERROR CREATION USER : " + e);
-                    }
-                });
+            const existingEmail = yield db_1.default.user.findUnique({
+                where: {
+                    email: email,
+                },
             });
+            if (!existingEmail) {
+                const hashPassword = yield bcrypt_1.default.hash(password, 10, function (err, hash) {
+                    return __awaiter(this, void 0, void 0, function* () {
+                        try {
+                            const newUser = yield db_1.default.user.create({
+                                data: {
+                                    firstname,
+                                    lastname,
+                                    email,
+                                    password: hash,
+                                },
+                            });
+                            console.log(newUser);
+                            const { password } = newUser, userInfos = __rest(newUser, ["password"]);
+                            return res.status(201).json(userInfos);
+                        }
+                        catch (e) {
+                            console.log("ERROR CREATION USER : " + e);
+                            return res.status(500).send("ERROR");
+                        }
+                    });
+                });
+            }
+            else {
+                return res.status(400).send("Email already used");
+            }
         }
         catch (e) {
             return res.status(500).json(e);
         }
     }
-    return res.status(422).json({ errors: errors.array() });
+    else {
+        return res.status(422).json({ errors: errors.array() });
+    }
 }));
 router.patch("/:id", users_1.updateValidator, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;

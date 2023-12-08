@@ -40,33 +40,44 @@ router.post("/", createValidator, async (req: Request, res: Response) => {
     if (errors.isEmpty()) {
         const { firstname, lastname, email, password } = req.body;
         try {
-            const hashPassword = await bcrypt.hash(
-                password,
-                10,
-                async function (err, hash) {
-                    try {
-                        const newUser = await prisma.user.create({
-                            data: {
-                                firstname,
-                                lastname,
-                                email,
-                                password: hash,
-                            },
-                        });
-                        console.log(newUser);
+            const existingEmail = await prisma.user.findUnique({
+                where: {
+                    email: email,
+                },
+            });
+            if (!existingEmail) {
+                const hashPassword = await bcrypt.hash(
+                    password,
+                    10,
+                    async function (err, hash) {
+                        try {
+                            const newUser = await prisma.user.create({
+                                data: {
+                                    firstname,
+                                    lastname,
+                                    email,
+                                    password: hash,
+                                },
+                            });
+                            console.log(newUser);
 
-                        const { password, ...userInfos } = newUser;
-                        return res.status(201).json(userInfos);
-                    } catch (e) {
-                        console.log("ERROR CREATION USER : " + e);
+                            const { password, ...userInfos } = newUser;
+                            return res.status(201).json(userInfos);
+                        } catch (e) {
+                            console.log("ERROR CREATION USER : " + e);
+                            return res.status(500).send("ERROR");
+                        }
                     }
-                }
-            );
+                );
+            } else {
+                return res.status(400).send("Email already used");
+            }
         } catch (e) {
             return res.status(500).json(e);
         }
+    } else {
+        return res.status(422).json({ errors: errors.array() });
     }
-    return res.status(422).json({ errors: errors.array() });
 });
 
 router.patch("/:id", updateValidator, async (req: Request, res: Response) => {
