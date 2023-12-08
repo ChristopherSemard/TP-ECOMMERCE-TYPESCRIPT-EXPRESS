@@ -23,17 +23,13 @@ app.get("/", async (req, res) => {
 });
 
 app.use("/auth", auth);
-// app.use("/users", passport.authenticate("jwt", { session: false }), users);
-// app.use(
-//     "/products",
-//     passport.authenticate("jwt", { session: false }),
-//     products
-// );
-// app.use("/orders", passport.authenticate("jwt", { session: false }), orders);
-
-app.use("/users", users);
-app.use("/products", products);
-app.use("/orders", orders);
+app.use("/users", passport.authenticate("jwt", { session: false }), users);
+app.use(
+    "/products",
+    passport.authenticate("jwt", { session: false }),
+    products
+);
+app.use("/orders", passport.authenticate("jwt", { session: false }), orders);
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);

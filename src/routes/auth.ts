@@ -2,7 +2,7 @@ import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../utils/db";
-import { checkSchema, query, validationResult } from "express-validator";
+import { validationResult } from "express-validator";
 import { signinValidator } from "../validators/auth";
 import { Request, Response } from "express";
 const router = express.Router();

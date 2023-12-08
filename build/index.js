@@ -18,6 +18,7 @@ const auth_1 = __importDefault(require("./routes/auth"));
 const users_1 = __importDefault(require("./routes/users"));
 const products_1 = __importDefault(require("./routes/products"));
 const orders_1 = __importDefault(require("./routes/orders"));
+const passport_1 = __importDefault(require("passport"));
 const ratelimiter_1 = require("./middleware/ratelimiter");
 const helmet_1 = __importDefault(require("helmet"));
 require("./utils/passport.js");
@@ -31,16 +32,9 @@ app.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     return res.send("Bonjour");
 }));
 app.use("/auth", auth_1.default);
-// app.use("/users", passport.authenticate("jwt", { session: false }), users);
-// app.use(
-//     "/products",
-//     passport.authenticate("jwt", { session: false }),
-//     products
-// );
-// app.use("/orders", passport.authenticate("jwt", { session: false }), orders);
-app.use("/users", users_1.default);
-app.use("/products", products_1.default);
-app.use("/orders", orders_1.default);
+app.use("/users", passport_1.default.authenticate("jwt", { session: false }), users_1.default);
+app.use("/products", passport_1.default.authenticate("jwt", { session: false }), products_1.default);
+app.use("/orders", passport_1.default.authenticate("jwt", { session: false }), orders_1.default);
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
 });
